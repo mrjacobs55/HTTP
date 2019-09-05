@@ -35,6 +35,14 @@ int main(int argc, char *argv[]){
 	client_addr.sin_port = htons(PORT);
 	int addrlen = sizeof(client_addr);
 
+	int opt = 1;
+	int freeSockStatus = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt));
+
+	if(freeSockStatus < 0){
+		printf("Error Force Freeing Socket");
+		exit(0);
+	}
+
 	int bindStatus = bind(sock , (const struct sockaddr *)&client_addr, addrlen);
 
 	if(bindStatus < 0){
