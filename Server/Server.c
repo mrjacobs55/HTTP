@@ -66,6 +66,9 @@ int main(int argc, char *argv[]){
 	printf("%s\n",buffer);
 	send(connection, buffer, strlen(buffer), 0);
 	printf("Readback sent\n");
-	return 1;
+
+	int closeSocketStatus = shutdown(connection,2);
+
+	return closeSocketStatus;
 }
 

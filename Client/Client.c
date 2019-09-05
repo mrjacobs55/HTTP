@@ -60,7 +60,7 @@ int main(int argc, char *argv[]){
 	printf("%s\n", buffer);
 
 
-	return 0;
+	return shutdown(sock,2);
 
 }
 
