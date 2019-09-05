@@ -67,7 +67,7 @@ int main(int argc, char *argv[]){
 	send(connection, buffer, strlen(buffer), 0);
 	printf("Readback sent\n");
 
-	int closeSocketStatus = shutdown(connection,2);
+	int closeSocketStatus = shutdown(connection,2) | shutdown(sock,2) ;
 
 	return closeSocketStatus;
 }
