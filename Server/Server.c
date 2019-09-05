@@ -65,7 +65,7 @@ int main(int argc, char *argv[]){
 	int readStatus = read(connection, buffer, 1024);
 	printf("%s\n",buffer);
 	send(connection, buffer, strlen(buffer), 0);
-	printf("Readback sent");
+	printf("Readback sent\n");
 	return 1;
 }
 
