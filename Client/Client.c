@@ -16,6 +16,8 @@
 
 int main(int argc, char *argv[]){
 
+	char* message = argv[1];
+
 	int sock = socket(AF_INET, SOCK_STREAM,0);
 	if(sock < 0){
 		printf("Socket Creation Failed\n");
@@ -47,7 +49,9 @@ int main(int argc, char *argv[]){
 	}
 	char buffer[1024] = {0};
 
-	char* message = "Hi";
+	if(message == NULL){
+		message = "No Message 😢";
+	}
 	send(sock , message , strlen(message) , 0 );
 	printf("Sent\n");
 
