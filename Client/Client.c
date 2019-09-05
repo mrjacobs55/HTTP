@@ -45,11 +45,13 @@ int main(int argc, char *argv[]){
 	}else{
 		printf("Connection Established ...\n");
 	}
+	char buffer[1024] = {0};
 
-	send(sock , "hi" , strlen("hi") , 0 );
+	char message = "Hi";
+	send(sock , message , strlen(message) , 0 );
 	printf("Sent\n");
 
-	char buffer[1024];
+
 	int readStatus = read(sock, buffer, 1024);
 	printf("%s\n", buffer);
 
