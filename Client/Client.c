@@ -20,9 +20,9 @@ int main(int argc, char *argv[]){
 	if(sock < 0){
 		printf("Socket Creation Failed\n");
 		exit(0);
-	}else
+	}else{
 		printf("Socket opened...\n");
-
+	}
 	struct sockaddr_in server_addr;
 	server_addr.sin_family = AF_INET;
 	server_addr.sin_port = htons(PORT);
@@ -30,8 +30,8 @@ int main(int argc, char *argv[]){
 
 	int conversionStatus = inet_pton(AF_INET, "127.0.0.1", &server_addr.sin_addr);
 	if (conversionStatus < 0){
-	        printf("\nInvalid address");
-	        exit(0);
+		printf("\nInvalid address");
+		exit(0);
 	}else {
 		printf("Address Converted...\n");
 	}
