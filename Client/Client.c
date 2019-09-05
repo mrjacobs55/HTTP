@@ -47,7 +47,7 @@ int main(int argc, char *argv[]){
 	}
 	char buffer[1024] = {0};
 
-	char message = "Hi";
+	char* message = "Hi";
 	send(sock , message , strlen(message) , 0 );
 	printf("Sent\n");
 
