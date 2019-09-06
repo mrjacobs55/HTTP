@@ -9,14 +9,17 @@
 #include <stdlib.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <netdb.h>
 #include <string.h>
 #include "Client.h"
 
-#define PORT 8080
+#define PORT 80
 
 int main(int argc, char *argv[]){
 
-	char* message = argv[1];
+	char* host = argv[1];
+	char* content = "GET mit.edu/index.html HTTP/1.1 \r\n \r\n";
+	printf("%s", content);
 
 	int sock = socket(AF_INET, SOCK_STREAM,0);
 	if(sock < 0){
@@ -29,8 +32,9 @@ int main(int argc, char *argv[]){
 	server_addr.sin_family = AF_INET;
 	server_addr.sin_port = htons(PORT);
 
+	host = "mit.edu";
 
-	int conversionStatus = inet_pton(AF_INET, "127.0.0.1", &server_addr.sin_addr);
+	int conversionStatus = inet_pton(AF_INET, makeV4(host), &server_addr.sin_addr);
 	if (conversionStatus < 0){
 		printf("\nInvalid address");
 		exit(0);
@@ -47,23 +51,52 @@ int main(int argc, char *argv[]){
 	}else{
 		printf("Connection Established ...\n");
 	}
-	char buffer[1024] = {0};
+	char buffer[16384] = {0};
 
-	if(message == NULL){
-		message = "No Message 😢";
+	if(content == NULL){
+		content = "No Message 😢";
 	}
-	send(sock , message , strlen(message) , 0 );
+	send(sock , content , strlen(content) , 0 );
 	printf("Sent\n");
 
 
-	int readStatus = read(sock, buffer, 1024);
+	int readStatus = read(sock, buffer, 16384);
+	if(readStatus < 0){
+		printf("Read Failed");
+		exit(0);
+	}else{
+		printf("Received Message ...\n");
+	}
 	printf("%s\n", buffer);
+
 
 
 	return shutdown(sock,2);
 
 }
 
+struct addrinfo hints, *infoptr;
 
+/*
+ * Converts a hostname to its ipv4 address string equivalent
+ */
+char* makeV4(char* hostname){
+	hints.ai_family = AF_INET;
+
+	int getAddrInfoStatus = getaddrinfo(hostname, NULL, &hints, &infoptr);
+	if(getAddrInfoStatus < 0){
+		printf("Hostname Conversion Failed\n ");
+		exit(0);
+	}else{
+		printf("Hostname Converted from %s to ...", hostname);
+	}
+
+	char* hostV4 = malloc(sizeof(char)*256);
+	getnameinfo(infoptr->ai_addr, infoptr->ai_addrlen, hostV4, 256, NULL, 0, NI_NUMERICHOST);
+	printf("%s" , hostV4);
+	printf("\n");
+
+	return hostV4;
+}
 
 
