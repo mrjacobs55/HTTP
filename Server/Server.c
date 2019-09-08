@@ -72,11 +72,34 @@ int main(int argc, char *argv[]){
 	char buffer[1024] = {0};
 	int readStatus = read(connection, buffer, 1024);
 	printf("%s\n",buffer);
-	send(connection, buffer, strlen(buffer), 0);
+
+	//send(connection, buffer, strlen(buffer), 0);
+	transmitFile(connection);
+
 	printf("Readback sent\n");
 
 	int closeSocketStatus = shutdown(connection,2) | shutdown(sock,2) ;
 
 	return closeSocketStatus;
+}
+
+int transmitFile(int connection){
+	static const char filename[] = "TMDG.html";
+
+	   FILE *file = fopen ( filename, "r" );
+	   if ( file != NULL )
+	   {
+	      char line [ 256 ]; /* or other suitable maximum line size */
+	      while ( fgets ( line, sizeof line, file ) != NULL ) /* read a line */
+	      {
+	         send(connection, line, strlen(line), 0);
+	      }
+	      fclose ( file );
+	   }
+	   else
+	   {
+	      perror ( filename ); /* why didn't the file open? */
+	   }
+	   return 0;
 }
 
