@@ -85,7 +85,7 @@ int main(int argc, char *argv[]){
 			//printf("Connecting...\n");
 		}
 
-		char buffer[1024] = {0};
+		char buffer = calloc(1024 * sizeof(char));
 		int readStatus = read(connection, buffer, 1024);
 
 		if(readStatus < 0){
@@ -94,7 +94,7 @@ int main(int argc, char *argv[]){
 		//printf("%s\n",buffer);
 
 		char function[8] = {0};
-		char file[32] = {0};
+		char file = calloc(sizeof(char) * 32);
 
 		proccess(buffer, function, file);
 
@@ -110,6 +110,7 @@ int main(int argc, char *argv[]){
 			sendHeader(connection , 400);
 		}
 		//printf("Readback sent\n");
+		free(file);
 
 		int closeSocketStatus = shutdown(connection,2) | shutdown(sock,2) ;
 	}
