@@ -43,40 +43,39 @@ int main(int argc, char *argv[]){
 
 	}
 
-	struct sockaddr_in client_addr;
-	client_addr.sin_family = AF_INET;
-	client_addr.sin_addr.s_addr = INADDR_ANY;
-	client_addr.sin_port = htons(port);
-	int addrlen = sizeof(client_addr);
+		struct sockaddr_in client_addr;
+		client_addr.sin_family = AF_INET;
+		client_addr.sin_addr.s_addr = INADDR_ANY;
+		client_addr.sin_port = htons(port);
+		int addrlen = sizeof(client_addr);
 
-	int opt = 1;
-	int freeSockStatus = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt));
+		int opt = 1;
+		int freeSockStatus = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt));
 
-	if(freeSockStatus < 0){
-		fprintf(stderr, "Error freeing socket: %s\n", strerror(errno));
-		exit(0);
-	}
+		if(freeSockStatus < 0){
+			fprintf(stderr, "Error freeing socket: %s\n", strerror(errno));
+			exit(0);
+		}
 
-	int bindStatus = bind(sock , (const struct sockaddr *)&client_addr, addrlen);
+		int bindStatus = bind(sock , (const struct sockaddr *)&client_addr, addrlen);
 
-	if(bindStatus < 0){
-		fprintf(stderr, "Error binding socket: %s\n", strerror(errno));
-		exit(0);
-	}else{
-		//printf("Binded to port ...\n");
-	}
+		if(bindStatus < 0){
+			fprintf(stderr, "Error binding socket: %s\n", strerror(errno));
+			exit(0);
+		}else{
+			//printf("Binded to port ...\n");
+		}
+		while ( 0 == 0){
+		int listenStatus = listen(sock,5);
+		if(listenStatus<0){
+			fprintf(stderr, "Error listening on socket: %s\n", strerror(errno));
+			exit(0);
+		}else{
+			//printf("Listening...\n");
+		}
+		printf("Server is running on port %i\n", port);
 
-	int listenStatus = listen(sock,5);
-	if(listenStatus<0){
-		fprintf(stderr, "Error listening on socket: %s\n", strerror(errno));
-		exit(0);
-	}else{
-		//printf("Listening...\n");
-	}
-	printf("Server is running on port %i\n", port);
-
-	int connection;
-	while(1==1){
+		int connection;
 
 		connection = accept(sock, (struct sockaddr *)&client_addr, (socklen_t*)&addrlen);
 		if(connection < 0){
@@ -110,12 +109,12 @@ int main(int argc, char *argv[]){
 		}else{
 			sendHeader(connection , 400);
 		}
+		//printf("Readback sent\n");
+
+		int closeSocketStatus = shutdown(connection,2) | shutdown(sock,2) ;
 	}
-	//printf("Readback sent\n");
 
-	int closeSocketStatus = shutdown(connection,2) | shutdown(sock,2) ;
-
-	return closeSocketStatus;
+	return 0;
 }
 
 int get(char* name, int connection){
