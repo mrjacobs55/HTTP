@@ -155,7 +155,7 @@ void sendHeader(int connection, int code){
 	}
 
 	send(connection, header, strlen(header), 0); //Send header
-	printf("Sent Header: %s", header);
+	//printf("Sent Header: %s", header);
 
 }
 void proccess(char* request, char* function, char* file){
