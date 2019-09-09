@@ -13,11 +13,13 @@
 #include <string.h>
 #include "Client.h"
 
-#define PORT 3534
+
 
 int main(int argc, char *argv[]){
-
+	int port = atoi(argv[2]);
 	char* host = argv[1];
+
+
 	char* content = "GET /something HTTP/1.1\r\n Host: localhost\r\n \r\n";
 	printf("%s", content);
 
@@ -30,9 +32,9 @@ int main(int argc, char *argv[]){
 	}
 	struct sockaddr_in server_addr;
 	server_addr.sin_family = AF_INET;
-	server_addr.sin_port = htons(PORT);
+	server_addr.sin_port = htons(port);
 
-	host = "localhost"; //"ccc-app-p-u01.wpi.edu";
+	//host = "localhost"; //"ccc-app-p-u01.wpi.edu";
 
 	int conversionStatus = inet_pton(AF_INET, makeV4(host), &server_addr.sin_addr);
 	if (conversionStatus < 0){
