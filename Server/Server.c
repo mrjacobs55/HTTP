@@ -123,6 +123,7 @@ int transmitFile(char* name, int connection){
 		header = "HTTP/1.1 404 Not Found \r\n \r\n";
 	}
 	send(connection, header, strlen(header), 0); //Send header
+	printf("Sent Header:\n %s", header);
 
 	if (file != NULL)
 	{
