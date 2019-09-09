@@ -75,8 +75,10 @@ int main(int argc, char *argv[]){
 	}
 	printf("Server is running on port %i\n", port);
 
+	int connection;
 	while(1==1){
-		int connection = accept(sock, (struct sockaddr *)&client_addr, (socklen_t*)&addrlen);
+
+		connection = accept(sock, (struct sockaddr *)&client_addr, (socklen_t*)&addrlen);
 		if(connection < 0){
 			fprintf(stderr, "Error listening connecting to client: %s\n", strerror(errno));
 			exit(0);
@@ -102,7 +104,7 @@ int main(int argc, char *argv[]){
 
 
 		//send(connection, buffer, strlen(buffer), 0);  //ECHO SERVER
-		printf("Function: %s\n", function);
+		//printf("Function: %s\n", function);
 		if(!strcmp(function,"GET")){
 			get(file, connection);
 		}else{
@@ -111,9 +113,9 @@ int main(int argc, char *argv[]){
 	}
 	//printf("Readback sent\n");
 
-	//int closeSocketStatus = shutdown(connection,2) | shutdown(sock,2) ;
+	int closeSocketStatus = shutdown(connection,2) | shutdown(sock,2) ;
 
-	return 0; //closeSocketStatus;
+	return closeSocketStatus;
 }
 
 int get(char* name, int connection){
@@ -153,7 +155,7 @@ void sendHeader(int connection, int code){
 	}
 
 	send(connection, header, strlen(header), 0); //Send header
-	printf("Sent Header:\n %s", header);
+	printf("Sent Header: %s", header);
 
 }
 void proccess(char* request, char* function, char* file){
