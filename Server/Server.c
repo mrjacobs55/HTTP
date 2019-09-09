@@ -75,44 +75,45 @@ int main(int argc, char *argv[]){
 	}
 	printf("Server is running on port %i\n", port);
 
-	int connection = accept(sock, (struct sockaddr *)&client_addr, (socklen_t*)&addrlen);
-	if(connection < 0){
-		fprintf(stderr, "Error listening connecting to client: %s\n", strerror(errno));
-		exit(0);
-	}else{
-		//printf("Connecting...\n");
+	while(1==1){
+		int connection = accept(sock, (struct sockaddr *)&client_addr, (socklen_t*)&addrlen);
+		if(connection < 0){
+			fprintf(stderr, "Error listening connecting to client: %s\n", strerror(errno));
+			exit(0);
+		}else{
+			//printf("Connecting...\n");
+		}
+
+		char buffer[1024] = {0};
+		int readStatus = read(connection, buffer, 1024);
+
+		if(readStatus < 0){
+			fprintf(stderr, "Error reading from buffer: %s\n", strerror(errno));
+		}
+		//printf("%s\n",buffer);
+
+		char function[8] = {0};
+		char file[32] = {0};
+
+		proccess(buffer, function, file);
+
+
+		//printf("%s\n%s\n\n", function, file);
+
+
+		//send(connection, buffer, strlen(buffer), 0);  //ECHO SERVER
+		printf("Function: %s\n", function);
+		if(!strcmp(function,"GET")){
+			get(file, connection);
+		}else{
+			sendHeader(connection , 400);
+		}
 	}
-
-	char buffer[1024] = {0};
-	int readStatus = read(connection, buffer, 1024);
-
-	if(readStatus < 0){
-		fprintf(stderr, "Error reading from buffer: %s\n", strerror(errno));
-	}
-	//printf("%s\n",buffer);
-
-	char function[8] = {0};
-	char file[32] = {0};
-
-	proccess(buffer, function, file);
-
-
-	//printf("%s\n%s\n\n", function, file);
-
-
-	//send(connection, buffer, strlen(buffer), 0);  //ECHO SERVER
-	printf("Function: %s\n", function);
-	if(!strcmp(function,"GET")){
-		get(file, connection);
-	}else{
-		sendHeader(connection , 400);
-	}
-
 	//printf("Readback sent\n");
 
-	int closeSocketStatus = shutdown(connection,2) | shutdown(sock,2) ;
+	//int closeSocketStatus = shutdown(connection,2) | shutdown(sock,2) ;
 
-	return closeSocketStatus;
+	return 0; //closeSocketStatus;
 }
 
 int get(char* name, int connection){
