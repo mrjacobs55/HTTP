@@ -85,7 +85,7 @@ int main(int argc, char *argv[]){
 			//printf("Connecting...\n");
 		}
 
-		char buffer = calloc(1024 * sizeof(char));
+		char* buffer = calloc(1024, sizeof(char));
 		int readStatus = read(connection, buffer, 1024);
 
 		if(readStatus < 0){
@@ -94,7 +94,7 @@ int main(int argc, char *argv[]){
 		//printf("%s\n",buffer);
 
 		char function[8] = {0};
-		char file = calloc(sizeof(char) * 32);
+		char* file = calloc(sizeof(char), 32);
 
 		proccess(buffer, function, file);
 
