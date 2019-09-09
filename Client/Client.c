@@ -38,7 +38,7 @@ int main(int argc, char *argv[]){
 	printf("File :%s\n", file);
 
 	char* content = calloc(128, sizeof(char));
-	strcpy(content, "GET ");
+	strcpy(content, "GET /");
 	strcat(content, file);
 	strcat(content, " HTTP/1.1\r\n Host:");
 	strcat(content, host);
