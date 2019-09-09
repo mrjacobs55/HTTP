@@ -102,7 +102,7 @@ int main(int argc, char *argv[]){
 
 	//send(connection, buffer, strlen(buffer), 0);  //ECHO SERVER
 	if(strcmp(function,"GET")){
-		get(file, connection);
+		transmitFile(file, connection);
 	}
 
 	//printf("Readback sent\n");
@@ -112,7 +112,7 @@ int main(int argc, char *argv[]){
 	return closeSocketStatus;
 }
 
-int get(char* name, int connection){
+int transmitFile(char* name, int connection){
 	char* filename = name;
 	FILE *file = fopen (filename, "r");
 	char* header;
