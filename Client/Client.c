@@ -32,7 +32,7 @@ int main(int argc, char *argv[]){
 	server_addr.sin_family = AF_INET;
 	server_addr.sin_port = htons(PORT);
 
-	host = "ccc-app-p-u01.wpi.edu";
+	host = "localhost"; //"ccc-app-p-u01.wpi.edu";
 
 	int conversionStatus = inet_pton(AF_INET, makeV4(host), &server_addr.sin_addr);
 	if (conversionStatus < 0){
