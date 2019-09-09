@@ -101,8 +101,11 @@ int main(int argc, char *argv[]){
 
 
 	//send(connection, buffer, strlen(buffer), 0);  //ECHO SERVER
-	if(strcmp(function,"GET")){
-		transmitFile(file, connection);
+	printf("Function: %s\n", function);
+	if(!strcmp(function,"GET")){
+		get(file, connection);
+	}else{
+		sendHeader(connection , 400);
 	}
 
 	//printf("Readback sent\n");
@@ -112,21 +115,14 @@ int main(int argc, char *argv[]){
 	return closeSocketStatus;
 }
 
-int transmitFile(char* name, int connection){
+int get(char* name, int connection){
 	char* filename = name;
 	FILE *file = fopen (filename, "r");
-	char* header;
 
-	if(file != NULL){
-		header = "HTTP/1.1 200 OK \r\n \r\n";
-	}else{
-		header = "HTTP/1.1 404 Not Found \r\n \r\n";
-	}
-	send(connection, header, strlen(header), 0); //Send header
-	printf("Sent Header:\n %s", header);
 
 	if (file != NULL)
 	{
+		sendHeader(connection,200);                     //Send 200 OK header
 		char line [1024];
 		while (fgets (line, sizeof line, file) != NULL ) // Read file chunk
 		{
@@ -136,11 +132,29 @@ int transmitFile(char* name, int connection){
 	}
 	else
 	{
+		sendHeader(connection,404);                   // Send 400 header
 		fprintf(stderr, "404 sent: %s\n", strerror(errno));
 	}
 	return 0;
 }
+void sendHeader(int connection, int code){
+	char* header;
+	if(code == 200){
+		header = "HTTP/1.1 200 OK \r\n \r\n";
+	}
 
+	if(code == 404){
+		header = "HTTP/1.1 404 Not Found \r\n \r\n";
+	}
+
+	if(code == 400){
+		header = "HTTP/1.1 400 Invalid Request \r\n \r\n";
+	}
+
+	send(connection, header, strlen(header), 0); //Send header
+	printf("Sent Header:\n %s", header);
+
+}
 void proccess(char* request, char* function, char* file){
 	char* next = request;
 	char* tracker = function;

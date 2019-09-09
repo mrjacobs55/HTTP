@@ -20,7 +20,7 @@ int main(int argc, char *argv[]){
 	char* host = argv[1];
 
 
-	char* content = "GET /doesntexist.html HTTP/1.1\r\n Host: localhost\r\n \r\n";
+	char* content = "GET /index.html HTTP/1.1\r\n Host: localhost\r\n \r\n";
 	printf("%s", content);
 
 	int sock = socket(AF_INET, SOCK_STREAM,0);
