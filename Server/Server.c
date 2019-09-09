@@ -84,12 +84,15 @@ int main(int argc, char *argv[]){
 }
 
 int transmitFile(int connection){
+
+	char* header = "HTTP/1.1 200 OK \r\n \r\n";
+	send(connection, header, strlen(header), 0);
 	static const char filename[] = "TMDG.html";
 
 	   FILE *file = fopen ( filename, "r" );
 	   if ( file != NULL )
 	   {
-	      char line [ 256 ]; /* or other suitable maximum line size */
+	      char line [16384]; /* or other suitable maximum line size */
 	      while ( fgets ( line, sizeof line, file ) != NULL ) /* read a line */
 	      {
 	         send(connection, line, strlen(line), 0);
