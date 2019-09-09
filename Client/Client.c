@@ -13,12 +13,12 @@
 #include <string.h>
 #include "Client.h"
 
-#define PORT 80
+#define PORT 3534
 
 int main(int argc, char *argv[]){
 
 	char* host = argv[1];
-	char* content = "GET mit.edu/index.html HTTP/1.1 \r\n \r\n";
+	char* content = "GET /something HTTP/1.1\r\n Host: localhost\r\n \r\n";
 	printf("%s", content);
 
 	int sock = socket(AF_INET, SOCK_STREAM,0);
@@ -32,7 +32,7 @@ int main(int argc, char *argv[]){
 	server_addr.sin_family = AF_INET;
 	server_addr.sin_port = htons(PORT);
 
-	host = "mit.edu";
+	host = "ccc-app-p-u01.wpi.edu";
 
 	int conversionStatus = inet_pton(AF_INET, makeV4(host), &server_addr.sin_addr);
 	if (conversionStatus < 0){
