@@ -112,9 +112,10 @@ int main(int argc, char *argv[]){
 		//printf("Readback sent\n");
 		free(file);
 
-		int closeSocketStatus = shutdown(connection,2) | shutdown(sock,2) ;
+		//int closeSocketStatus = shutdown(connection,2) | shutdown(sock,2) ;
 	}
 
+	fprintf(stderr, "I left the loop");
 	return 0;
 }
 
