@@ -20,7 +20,7 @@ int main(int argc, char *argv[]){
 	char* host = argv[1];
 
 
-	char* content = "GET /something HTTP/1.1\r\n Host: localhost\r\n \r\n";
+	char* content = "GET /doesntexist.html HTTP/1.1\r\n Host: localhost\r\n \r\n";
 	printf("%s", content);
 
 	int sock = socket(AF_INET, SOCK_STREAM,0);
@@ -59,7 +59,7 @@ int main(int argc, char *argv[]){
 		content = "No Message 😢";
 	}
 	send(sock , content , strlen(content) , 0 );
-	printf("Sent\n");
+	printf("Sent:\n %s\n", content);
 
 
 	int readStatus = read(sock, buffer, 16384);
