@@ -16,12 +16,29 @@
 
 
 int main(int argc, char *argv[]){
-	int port = atoi(argv[2]);
-	char* host = argv[1];
+	int port = atoi(argv[argc - 1]);
+	char* host = argv[argc - 2];
 
+	char* ptr = host;
+	char* file;
+	int firstSlash = 0;
+
+	while(*ptr != '\0'){
+		if(*ptr == '/' && firstSlash == 0){
+			firstSlash = 1;
+			*ptr = '\0';
+			ptr ++;
+			file = ptr;
+			break;
+		}
+		ptr++;
+	}
+
+	printf("URL : %s\n", host);
+	printf("File :%s\n", file);
 
 	char* content = "GET /index.html HTTP/1.1\r\n Host: localhost\r\n \r\n";
-	printf("%s", content);
+//	printf("%s", content);
 
 	int sock = socket(AF_INET, SOCK_STREAM,0);
 	if(sock < 0){
