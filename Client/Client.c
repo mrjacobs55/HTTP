@@ -37,7 +37,14 @@ int main(int argc, char *argv[]){
 	printf("URL : %s\n", host);
 	printf("File :%s\n", file);
 
-	char* content = "GET /index.html HTTP/1.1\r\n Host: localhost\r\n \r\n";
+	char* content = calloc(128, sizeof(char));
+	strcpy(content, "GET ");
+	strcat(content, file);
+	strcat(content, " HTTP/1.1\r\n Host:");
+	strcat(content, host);
+	strcat(content, " localhost\r\n \r\n");
+
+
 //	printf("%s", content);
 
 	int sock = socket(AF_INET, SOCK_STREAM,0);
