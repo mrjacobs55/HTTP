@@ -211,6 +211,9 @@ int readSocket(int sock, FILE* output){
 
 
 	do{
+		free(buffer);
+		buffer = calloc(128,sizeof(char)); //Make a buffer with clean memory
+
 		int readStatus = read(sock, buffer, 127);   //Read into the buffer leaving a space at the end
 
 		if(readStatus < 0){							//Error checking
