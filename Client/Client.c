@@ -27,7 +27,19 @@
  */
 int main(int argc, char *argv[]){
 
-	int port = atoi(argv[argc - 1]);
+	int port;
+
+	if(argv[1] == NULL){
+			port = 8080;
+			printf("Invalid Port Number Using Default Value of %i\n", port);
+		}else{
+			port = atoi(argv[1]);
+			if(port > 65535 || port <= 0){
+				port = 8080;
+				printf("Invalid Port Number Using Default Value of %i\n", port);
+			}
+		}
+
 	char* host = argv[argc - 2];
 	int RTT = 0;
 	if(argc > 3){
