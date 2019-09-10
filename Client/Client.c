@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/socket.h>
+#include <sys/time.h>
 #include <netinet/in.h>
 #include <netdb.h>
 #include <string.h>
@@ -28,6 +29,12 @@ int main(int argc, char *argv[]){
 
 	int port = atoi(argv[argc - 1]);
 	char* host = argv[argc - 2];
+	int RTT = 0;
+	if(argc > 3){
+		if(strstr(argv[1] , "-p")){
+			RTT = 1;  				//Print RTT
+		}
+	}
 
 	char* ptr = host;
 	char* file;
@@ -89,9 +96,15 @@ int main(int argc, char *argv[]){
 		//printf("Address Converted...\n");
 	}
 
+	struct timeval stop, start;
+	gettimeofday(&start, NULL);  	//Start Time
 
 	int connectStatus = connect(sock, (const struct sockaddr *)&server_addr, sizeof(server_addr) ); //Connect to Server
 
+	gettimeofday(&stop, NULL);
+	if(RTT){
+		printf("RTT is %'.3f MilliSeconds\n\n\n", (double) (stop.tv_sec - start.tv_sec) * 1000 + (double) (stop.tv_usec - start.tv_usec) / 1000);
+	}
 	if(connectStatus < 0){
 		fprintf(stderr, "Error completing connection: %s\n", strerror(errno));
 		exit(-1);
