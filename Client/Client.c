@@ -13,6 +13,8 @@
 #include <string.h>
 #include "Client.h"
 
+#include <errno.h>
+
 
 
 int main(int argc, char *argv[]){
@@ -34,35 +36,39 @@ int main(int argc, char *argv[]){
 		ptr++;
 	}
 
+	printf("Port: %i\n", port);
 	printf("URL : %s\n", host);
-	printf("File :%s\n", file);
+	printf("File: %s\n", file);
 
 	char* content = calloc(128, sizeof(char));
 	strcpy(content, "GET /");
 	strcat(content, file);
 	strcat(content, " HTTP/1.1\r\n Host:");
 	strcat(content, host);
-	strcat(content, " localhost\r\n \r\n");
+	strcat(content, " \r\n User-Agent: Mozzilla/5.0\r\n Accept: text/html\r\n Connection: keep-alive\r\n \r\n");
 
 
-//	printf("%s", content);
+	printf("%s", content);
 
 	int sock = socket(AF_INET, SOCK_STREAM,0);
 	if(sock < 0){
-		printf("Socket Creation Failed\n");
+		fprintf(stderr, "Error creating socket: %s\n", strerror(errno));
 		exit(0);
 	}else{
-		printf("Socket opened...\n");
+		//		printf("Socket opened...\n");
 	}
 	struct sockaddr_in server_addr;
 	server_addr.sin_family = AF_INET;
 	server_addr.sin_port = htons(port);
 
-	//host = "localhost"; //"ccc-app-p-u01.wpi.edu";
+	//	host = "localhost"; //"ccc-app-p-u01.wpi.edu";
 
-	int conversionStatus = inet_pton(AF_INET, makeV4(host), &server_addr.sin_addr);
+	char* v4 = makeV4(host);
+	int conversionStatus = inet_pton(AF_INET, v4, &server_addr.sin_addr);
+	free(v4); 			// Free the pointer Malloc'ed for in makeV4
+
 	if (conversionStatus < 0){
-		printf("\nInvalid address");
+		fprintf(stderr, "Error converting to IP address: %s\n", strerror(errno));
 		exit(0);
 	}else {
 		printf("Address Converted...\n");
@@ -72,32 +78,76 @@ int main(int argc, char *argv[]){
 	int connectStatus = connect(sock, (const struct sockaddr *)&server_addr, sizeof(server_addr) );
 
 	if(connectStatus < 0){
-		printf("Connection Failed\n");
+		fprintf(stderr, "Error completing connection: %s\n", strerror(errno));
 		exit(0);
 	}else{
 		printf("Connection Established ...\n");
 	}
-	char buffer[16384] = {0};
 
-	if(content == NULL){
-		content = "No Message 😢";
-	}
+
+	//	if(content == NULL){
+	//		content = "No Message 😢";
+	//	}
 	send(sock , content , strlen(content) , 0 );
-	printf("Sent:\n %s\n", content);
+	//	printf("Sent:\n %s\n", content);
+
+	FILE *output = fopen( "output.html", "w");
+
+	char* buffer = calloc(128,sizeof(char));
+	char* location = NULL;
+
+	char* start = NULL;
+	int write = -1;
+
+	while(location == NULL){
+		int readStatus = read(sock, buffer, 127);
+		buffer[127] = '\0'; //Make it a string
+		printf("%s", buffer);
+		location = strstr(buffer, "</html>");
+		if(location == NULL){
+			location = strstr(buffer, "</HTML>");
+		}
+		start = strstr(buffer, "<html>");
+		if(start == NULL){
+			start = strstr(buffer, "<HTML>");
+		}
+		if(start != NULL){
+			char* ptr = buffer;
+			while(ptr < (start)){
+				*ptr = ' ';
+				ptr ++;
+			}
+			write = 0;
+		}
+
+		if(location != NULL){
+			location += 7;
+			while(location < (buffer + 127)){
+				*location = '\0';
+				location ++;
+			}
+		}
+		if(write == 0){
+			fputs(buffer,output);
+		}
+		free(buffer);
+		buffer = calloc(127, sizeof(char));
+		if(readStatus < 0){
+			fprintf(stderr, "Error reading from socket: %s\n", strerror(errno));
+			exit(0);
+		}else{
+			//		printf("Received Message ...\n");
+		}
 
 
-	int readStatus = read(sock, buffer, 16384);
-	if(readStatus < 0){
-		printf("Read Failed");
-		exit(0);
-	}else{
-		printf("Received Message ...\n");
-	}
-	printf("%s\n", buffer);
+
+	};
 
 
 
-	return shutdown(sock,2);
+
+
+	return 0;
 
 }
 
@@ -111,16 +161,16 @@ char* makeV4(char* hostname){
 
 	int getAddrInfoStatus = getaddrinfo(hostname, NULL, &hints, &infoptr);
 	if(getAddrInfoStatus < 0){
-		printf("Hostname Conversion Failed\n ");
+		fprintf(stderr, "Error converting from Hostname: %s\n", strerror(errno));
 		exit(0);
 	}else{
-		printf("Hostname Converted from %s to ...", hostname);
+		//		printf("Hostname Converted from %s to ...", hostname);
 	}
 
 	char* hostV4 = malloc(sizeof(char)*256);
 	getnameinfo(infoptr->ai_addr, infoptr->ai_addrlen, hostV4, 256, NULL, 0, NI_NUMERICHOST);
-	printf("%s" , hostV4);
-	printf("\n");
+	//	printf("%s" , hostV4);
+	//	printf("\n");
 
 	return hostV4;
 }

@@ -85,6 +85,7 @@ int main(int argc, char *argv[]){
 			//printf("Connecting...\n");
 		}
 
+
 		char* buffer = calloc(1024, sizeof(char));
 		int readStatus = read(connection, buffer, 1024);
 
@@ -137,7 +138,7 @@ int get(char* name, int connection){
 	else
 	{
 		sendHeader(connection,404);                   // Send 400 header
-		fprintf(stderr, "404 sent: %s\n", strerror(errno));
+		fprintf(stderr, "404 sent for file %s : %s\n", filename, strerror(errno));
 	}
 	return 0;
 }
