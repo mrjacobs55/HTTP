@@ -43,7 +43,8 @@ Running the Client:
 	Output:
 		If -p is specified 	the RTT will be printed on the terminal in MilliSeconds  
 		The entire Server Response will be printed in the terminal
-		If the server serves an HTML document it will be saved under output.html
+		If the server serves an HTML document and a HTTP response with code 200 it will be saved 
+		under output.html 
 		The program will automatically terminate upon receiving a response from the server
 		
 Running the Server:
