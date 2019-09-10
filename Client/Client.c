@@ -29,7 +29,7 @@ int main(int argc, char *argv[]){
 
 	int port;
 
-	if(argv[1] == NULL){
+	if(argv[argc - 1] == NULL){
 			port = 8080;
 			printf("Invalid Port Number Using Default Value of %i\n", port);
 		}else{
