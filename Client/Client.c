@@ -33,7 +33,7 @@ int main(int argc, char *argv[]){
 			port = 8080;
 			printf("Invalid Port Number Using Default Value of %i\n", port);
 		}else{
-			port = atoi(argv[1]);
+			port = atoi(argv[argc - 1]);
 			if(port > 65535 || port <= 0){
 				port = 8080;
 				printf("Invalid Port Number Using Default Value of %i\n", port);
