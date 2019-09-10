@@ -17,6 +17,7 @@
 #include <errno.h>
 
 
+int RTT;
 /*
  * ./http_client [-options] server_url port_number
  * -p prints the RTT for accessing the URL on the terminal
@@ -41,10 +42,13 @@ int main(int argc, char *argv[]){
 	}
 
 	char* host = argv[argc - 2];
-	int RTT = 0;
+	RTT = 0;
 	if(argc > 3){
 		if(strstr(argv[1] , "-p")){
 			RTT = 1;  				//Print RTT
+		}
+		if(strstr(argv[1] , "-s")){
+			RTT = 2;  				//Print RTT
 		}
 	}
 
@@ -212,6 +216,7 @@ char* createHeader(char* inFile, char* inHost, char* header){
  * Prints all of the contents read from sock
  */
 int readSocket(int sock, FILE* output){
+	printf("Reading");
 	char* buffer = calloc(128,sizeof(char)); //Make a buffer with clean memory
 
 
@@ -236,30 +241,32 @@ int readSocket(int sock, FILE* output){
 		}
 
 		buffer[127] = '\0'; 						//Make it a string to make processing easier
-		printf("%s", buffer);						//Print the buffer so the server response is printed
+		if(RTT != 2){
+			printf("%s", buffer);						//Print the buffer so the server response is printed
+		}
 		if(strstr(buffer,"200")){
 			isOK = 1;
+			printf("OK");
 		}
-	}while(!strstr(buffer, "\r\n\r\n"));			//Go through the entire header
 
+	}while((!strstr(buffer, "\r\n\r\n") && !strstr(buffer, "\r\n \r\n")));			//Go through the entire header
 
+	//printf("ESCAPED");
 	// Write to File
-	int safety = 0;
-	while(end == NULL && isOK == 1 && safety < 30000){ 			//While the end of the HTML hasn't been seen
-
-		safety ++;
+	while(end == NULL && isOK == 1){ 			//While the end of the HTML hasn't been seen
 
 		end = strstr(buffer, "</html>");			//Look for ending tags
 		if(end == NULL){
 			end = strstr(buffer, "</HTML>");
 		}
 
-		start = strstr(buffer, "<html");		  	//Look for starting tags
+
+		start = strstr(buffer, "<!DOCTYPE ");	  	//Look for starting tags
 		if(start == NULL){
 			start = strstr(buffer, "<HTML");
 		}
 		if(start == NULL){
-			start = strstr(buffer, "<!DOCTYPE ");
+			start = strstr(buffer, "<html");
 		}
 
 
@@ -291,7 +298,7 @@ int readSocket(int sock, FILE* output){
 		free(buffer);								//Free the pointer
 		buffer = calloc(127, sizeof(char));			//Get new clean data (TODO inefficient)
 
-		if(end != NULL){
+		if(end == NULL){
 			int readStatus = read(sock, buffer, 127);   //Read into the buffer leaving a space at the end
 
 			if(readStatus < 0){							//Error checking
@@ -301,16 +308,10 @@ int readSocket(int sock, FILE* output){
 				//		printf("Received Message ...\n");
 			}
 		}
-		int readStatus = read(sock, buffer, 127);   //Read into the buffer leaving a space at the end
-
-		if(readStatus < 0){							//Error checking
-			fprintf(stderr, "Error reading from socket: %s\n", strerror(errno));
-			exit(0);
-		}else{
-			//		printf("Received Message ...\n");
-		}
 		buffer[127] = '\0'; 						//Make it a string to make processing easier
-		printf("%s", buffer);
+		if(RTT != 2){
+			printf("%s", buffer);
+		}
 
 	}
 
