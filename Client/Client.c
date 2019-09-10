@@ -43,12 +43,12 @@ int main(int argc, char *argv[]){
 	char* content = calloc(128, sizeof(char));
 	strcpy(content, "GET /");
 	strcat(content, file);
-	strcat(content, " HTTP/1.1\r\n Host:");
+	strcat(content, " HTTP/1.1\r\nHost:");
 	strcat(content, host);
-	strcat(content, " \r\n User-Agent: Mozzilla/5.0\r\n Accept: text/html\r\n Connection: keep-alive\r\n \r\n");
+	strcat(content, "\r\nAccept: text/html\r\nConnection: Close\r\n\r\n");
 
 
-	printf("%s", content);
+	//printf("%s", content);
 
 	int sock = socket(AF_INET, SOCK_STREAM,0);
 	if(sock < 0){
@@ -88,29 +88,44 @@ int main(int argc, char *argv[]){
 	//	if(content == NULL){
 	//		content = "No Message 😢";
 	//	}
-	send(sock , content , strlen(content) , 0 );
+
+
+	int sendStatus = send(sock , content , strlen(content)+2 , 0 );
+
+	//printf("%s\n", content);
+
+	//if(sendStatus == sizeof(content)){
+		//printf("Success Transmitting \n");
+	//}else{
+		//fprintf(stderr, "%i \n%i \n", 128, sendStatus);
+	//}
+
 	//	printf("Sent:\n %s\n", content);
 
 	FILE *output = fopen( "output.html", "w");
 
+	free(content);
 	char* buffer = calloc(128,sizeof(char));
 	char* location = NULL;
 
 	char* start = NULL;
 	int write = -1;
-
+// Write to File
 	while(location == NULL){
 		int readStatus = read(sock, buffer, 127);
 		buffer[127] = '\0'; //Make it a string
-		printf("%s", buffer);
+		//printf("%s", buffer);
 		location = strstr(buffer, "</html>");
 		if(location == NULL){
 			location = strstr(buffer, "</HTML>");
 		}
-		start = strstr(buffer, "<html>");
+		start = strstr(buffer, "<html");
 		if(start == NULL){
-			start = strstr(buffer, "<HTML>");
+			start = strstr(buffer, "<HTML");
 		}
+		if(start == NULL){
+					start = strstr(buffer, "<!DOCTYPE ");
+				}
 		if(start != NULL){
 			char* ptr = buffer;
 			while(ptr < (start)){
@@ -128,6 +143,7 @@ int main(int argc, char *argv[]){
 			}
 		}
 		if(write == 0){
+			printf("%s", buffer);
 			fputs(buffer,output);
 		}
 		free(buffer);

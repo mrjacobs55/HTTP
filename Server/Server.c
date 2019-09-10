@@ -92,7 +92,7 @@ int main(int argc, char *argv[]){
 		if(readStatus < 0){
 			fprintf(stderr, "Error reading from buffer: %s\n", strerror(errno));
 		}
-		//printf("%s\n",buffer);
+		printf("%s\n",buffer);
 
 		char function[8] = {0};
 		char* file = calloc(sizeof(char), 32);
