@@ -30,15 +30,15 @@ int main(int argc, char *argv[]){
 	int port;
 
 	if(argv[argc - 1] == NULL){
+		port = 8080;
+		printf("Invalid Port Number Using Default Value of %i\n", port);
+	}else{
+		port = atoi(argv[argc - 1]);
+		if(port > 65535 || port <= 0){
 			port = 8080;
 			printf("Invalid Port Number Using Default Value of %i\n", port);
-		}else{
-			port = atoi(argv[argc - 1]);
-			if(port > 65535 || port <= 0){
-				port = 8080;
-				printf("Invalid Port Number Using Default Value of %i\n", port);
-			}
 		}
+	}
 
 	char* host = argv[argc - 2];
 	int RTT = 0;
@@ -243,14 +243,11 @@ int readSocket(int sock, FILE* output){
 	}while(!strstr(buffer, "\r\n\r\n"));			//Go through the entire header
 
 
-
 	// Write to File
-	while(end == NULL && isOK == 1){ 			//While the end of the HTML hasn't been seen
+	int safety = 0;
+	while(end == NULL && isOK == 1 && safety < 30000){ 			//While the end of the HTML hasn't been seen
 
-
-
-
-
+		safety ++;
 
 		end = strstr(buffer, "</html>");			//Look for ending tags
 		if(end == NULL){
@@ -294,7 +291,16 @@ int readSocket(int sock, FILE* output){
 		free(buffer);								//Free the pointer
 		buffer = calloc(127, sizeof(char));			//Get new clean data (TODO inefficient)
 
+		if(end != NULL){
+			int readStatus = read(sock, buffer, 127);   //Read into the buffer leaving a space at the end
 
+			if(readStatus < 0){							//Error checking
+				fprintf(stderr, "Error reading from socket: %s\n", strerror(errno));
+				exit(0);
+			}else{
+				//		printf("Received Message ...\n");
+			}
+		}
 		int readStatus = read(sock, buffer, 127);   //Read into the buffer leaving a space at the end
 
 		if(readStatus < 0){							//Error checking
@@ -303,7 +309,6 @@ int readSocket(int sock, FILE* output){
 		}else{
 			//		printf("Received Message ...\n");
 		}
-
 		buffer[127] = '\0'; 						//Make it a string to make processing easier
 		printf("%s", buffer);
 
