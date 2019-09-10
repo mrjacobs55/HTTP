@@ -207,88 +207,93 @@ int readSocket(int sock, FILE* output){
 	char* end = NULL;
 
 	int write = -1; 				//Don't start writing to file immediately
-	// Write to File
-
-	int readStatus = read(sock, buffer, 127);   //Read into the buffer leaving a space at the end
-
-	if(readStatus < 0){							//Error checking
-		fprintf(stderr, "Error reading from socket: %s\n", strerror(errno));
-		exit(0);
-	}else{
-		//		printf("Received Message ...\n");
-	}
-
-	buffer[127] = '\0'; 						//Make it a string to make processing easier
-	printf("%s", buffer);						//Print the buffer so the server response is printed
+	int isOK = 0;				//Only enter loop if we have an html file denoted by an OK response
 
 
-	if(strstr(buffer, "200")){    				//Only enter loop if we have an html file denoted by an OK response
+	do{
+		int readStatus = read(sock, buffer, 127);   //Read into the buffer leaving a space at the end
 
-
-		while(end == NULL){ 			//While the end of the HTML hasn't been seen
-
-
-
-
-
-
-			end = strstr(buffer, "</html>");			//Look for ending tags
-			if(end == NULL){
-				end = strstr(buffer, "</HTML>");
-			}
-
-			start = strstr(buffer, "<html");		  	//Look for starting tags
-			if(start == NULL){
-				start = strstr(buffer, "<HTML");
-			}
-			if(start == NULL){
-				start = strstr(buffer, "<!DOCTYPE ");
-			}
-
-
-			if(start != NULL){							//If start was in THIS buffer clear out all data up to start
-				char* ptr = buffer;
-				while(ptr < (start)){
-					*ptr = ' ';
-					ptr ++;
-				}
-				write = 0;								//Allow writing to the File
-			}
-
-
-			if(end != NULL){							//If the end was in THIS buffer end the string following the end tag
-				end += 7;
-				while(end < (buffer + 127)){
-					*end = '\0';
-					end ++;
-				}
-			}
-
-
-			if(write == 0){								//If writing had been enabled write the buffer into the file
-				//printf("%s", buffer);
-				fputs(buffer,output);
-			}
-
-
-			free(buffer);								//Free the pointer
-			buffer = calloc(127, sizeof(char));			//Get new clean data (TODO inefficient)
-
-
-			int readStatus = read(sock, buffer, 127);   //Read into the buffer leaving a space at the end
-
-			if(readStatus < 0){							//Error checking
-				fprintf(stderr, "Error reading from socket: %s\n", strerror(errno));
-				exit(0);
-			}else{
-				//		printf("Received Message ...\n");
-			}
-
-			buffer[127] = '\0'; 						//Make it a string to make processing easier
-			printf("%s", buffer);
-
+		if(readStatus < 0){							//Error checking
+			fprintf(stderr, "Error reading from socket: %s\n", strerror(errno));
+			exit(0);
+		}else{
+			//		printf("Received Message ...\n");
 		}
+
+		buffer[127] = '\0'; 						//Make it a string to make processing easier
+		printf("%s", buffer);						//Print the buffer so the server response is printed
+		if(strstr(buffer,"200")){
+			isOK = 1;
+		}
+	}while(!strstr(buffer, "\r\n\r\n"));			//Go through the entire header
+
+
+
+	// Write to File
+	while(end == NULL && isOK == 1){ 			//While the end of the HTML hasn't been seen
+
+
+
+
+
+
+		end = strstr(buffer, "</html>");			//Look for ending tags
+		if(end == NULL){
+			end = strstr(buffer, "</HTML>");
+		}
+
+		start = strstr(buffer, "<html");		  	//Look for starting tags
+		if(start == NULL){
+			start = strstr(buffer, "<HTML");
+		}
+		if(start == NULL){
+			start = strstr(buffer, "<!DOCTYPE ");
+		}
+
+
+		if(start != NULL){							//If start was in THIS buffer clear out all data up to start
+			char* ptr = buffer;
+			while(ptr < (start)){
+				*ptr = ' ';
+				ptr ++;
+			}
+			write = 0;								//Allow writing to the File
+		}
+
+
+		if(end != NULL){							//If the end was in THIS buffer end the string following the end tag
+			end += 7;
+			while(end < (buffer + 127)){
+				*end = '\0';
+				end ++;
+			}
+		}
+
+
+		if(write == 0){								//If writing had been enabled write the buffer into the file
+			//printf("%s", buffer);
+			fputs(buffer,output);
+		}
+
+
+		free(buffer);								//Free the pointer
+		buffer = calloc(127, sizeof(char));			//Get new clean data (TODO inefficient)
+
+
+		int readStatus = read(sock, buffer, 127);   //Read into the buffer leaving a space at the end
+
+		if(readStatus < 0){							//Error checking
+			fprintf(stderr, "Error reading from socket: %s\n", strerror(errno));
+			exit(0);
+		}else{
+			//		printf("Received Message ...\n");
+		}
+
+		buffer[127] = '\0'; 						//Make it a string to make processing easier
+		printf("%s", buffer);
+
 	}
+
 	return 0;
 }
 
