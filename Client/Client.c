@@ -16,8 +16,16 @@
 #include <errno.h>
 
 
+/*
+ * ./http_client [-options] server_url port_number
+ * -p prints the RTT for accessing the URL on the terminal
 
+ *Output  Displays Servers Response on Terminal
+ *Output -p Prints RTT followed by Normal output
+
+ */
 int main(int argc, char *argv[]){
+
 	int port = atoi(argv[argc - 1]);
 	char* host = argv[argc - 2];
 
@@ -25,63 +33,70 @@ int main(int argc, char *argv[]){
 	char* file;
 	int firstSlash = 0;
 
-	while(*ptr != '\0'){
-		if(*ptr == '/' && firstSlash == 0){
-			firstSlash = 1;
-			*ptr = '\0';
-			ptr ++;
-			file = ptr;
-			break;
+
+	while(*ptr != '\0'){ 							//Not at end of string
+		if(*ptr == '/' && firstSlash == 0){			//If the url is completed
+			firstSlash = 1;							//We hit the start of the file location
+			*ptr = '\0';							//Seperate into 2 strings
+			ptr ++;									//Move to the first character of the file
+			file = ptr;								//Save it
+			break;									//Get out of the loop
 		}
 		ptr++;
 	}
 
-	printf("Port: %i\n", port);
-	printf("URL : %s\n", host);
-	printf("File: %s\n", file);
+	//	printf("Port: %i\n", port);
+	//	printf("URL : %s\n", host);
+	//	printf("File: %s\n", file);
 
-	char* content = calloc(128, sizeof(char));
-	strcpy(content, "GET /");
-	strcat(content, file);
-	strcat(content, " HTTP/1.1\r\nHost:");
-	strcat(content, host);
-	strcat(content, "\r\nAccept: text/html\r\nConnection: Close\r\n\r\n");
+
+	char* requestHeader = calloc(128, sizeof(char));
+
+	if(createHeader(file, host, requestHeader) == NULL){	//Create Header
+		fprintf(stderr, "Header Corrupted");
+		exit(-1);
+	}
 
 
 	//printf("%s", content);
 
-	int sock = socket(AF_INET, SOCK_STREAM,0);
+	int sock = socket(AF_INET, SOCK_STREAM,0);				//Open Socket
 	if(sock < 0){
 		fprintf(stderr, "Error creating socket: %s\n", strerror(errno));
-		exit(0);
+		exit(-1);
 	}else{
 		//		printf("Socket opened...\n");
 	}
-	struct sockaddr_in server_addr;
-	server_addr.sin_family = AF_INET;
-	server_addr.sin_port = htons(port);
 
-	//	host = "localhost"; //"ccc-app-p-u01.wpi.edu";
 
-	char* v4 = makeV4(host);
-	int conversionStatus = inet_pton(AF_INET, v4, &server_addr.sin_addr);
+	struct sockaddr_in server_addr;						//Server Address
+	server_addr.sin_family = AF_INET;						//Internet Address
+	server_addr.sin_port = htons(port);						//At PORT
+
+	//	host = "localhost";							//OVERRIDE Host for testing
+
+
+	char* v4 = makeV4(host);					//Convert to String of IPV4 address
+
+	int conversionStatus = inet_pton(AF_INET, v4, &server_addr.sin_addr); //Place the string ipv4 address into server_addr address field
+
 	free(v4); 			// Free the pointer Malloc'ed for in makeV4
 
 	if (conversionStatus < 0){
 		fprintf(stderr, "Error converting to IP address: %s\n", strerror(errno));
-		exit(0);
+		exit(-1);
 	}else {
-		printf("Address Converted...\n");
+		//printf("Address Converted...\n");
 	}
 
 
-	int connectStatus = connect(sock, (const struct sockaddr *)&server_addr, sizeof(server_addr) );
+	int connectStatus = connect(sock, (const struct sockaddr *)&server_addr, sizeof(server_addr) ); //Connect to Server
 
 	if(connectStatus < 0){
 		fprintf(stderr, "Error completing connection: %s\n", strerror(errno));
-		exit(0);
+		exit(-1);
 	}else{
-		printf("Connection Established ...\n");
+		//printf("Connection Established ...\n");
 	}
 
 
@@ -90,89 +105,37 @@ int main(int argc, char *argv[]){
 	//	}
 
 
-	int sendStatus = send(sock , content , strlen(content)+2 , 0 );
+	int sendStatus = send(sock , requestHeader, strlen(requestHeader) , 0 );  //Send request header to server
 
 	//printf("%s\n", content);
 
-	//if(sendStatus == sizeof(content)){
-		//printf("Success Transmitting \n");
-	//}else{
-		//fprintf(stderr, "%i \n%i \n", 128, sendStatus);
-	//}
+	if(sendStatus != strlen(requestHeader)){
+		fprintf(stderr, "Error Transmitting: %s\n", strerror(errno));
+		exit(-1);
+	}
 
 	//	printf("Sent:\n %s\n", content);
 
-	FILE *output = fopen( "output.html", "w");
+	FILE *output = fopen( "output.html", "w");				//Set output file
 
-	free(content);
-	char* buffer = calloc(128,sizeof(char));
-	char* location = NULL;
+	free(requestHeader);  					//It was transmitted and no longer needed
 
-	char* start = NULL;
-	int write = -1;
-// Write to File
-	while(location == NULL){
-		int readStatus = read(sock, buffer, 127);
-		buffer[127] = '\0'; //Make it a string
-		//printf("%s", buffer);
-		location = strstr(buffer, "</html>");
-		if(location == NULL){
-			location = strstr(buffer, "</HTML>");
-		}
-		start = strstr(buffer, "<html");
-		if(start == NULL){
-			start = strstr(buffer, "<HTML");
-		}
-		if(start == NULL){
-					start = strstr(buffer, "<!DOCTYPE ");
-				}
-		if(start != NULL){
-			char* ptr = buffer;
-			while(ptr < (start)){
-				*ptr = ' ';
-				ptr ++;
-			}
-			write = 0;
-		}
+	readSocket(sock , output);		//Read the servers response
 
-		if(location != NULL){
-			location += 7;
-			while(location < (buffer + 127)){
-				*location = '\0';
-				location ++;
-			}
-		}
-		if(write == 0){
-			printf("%s", buffer);
-			fputs(buffer,output);
-		}
-		free(buffer);
-		buffer = calloc(127, sizeof(char));
-		if(readStatus < 0){
-			fprintf(stderr, "Error reading from socket: %s\n", strerror(errno));
-			exit(0);
-		}else{
-			//		printf("Received Message ...\n");
-		}
+};
 
-
-
-	};
-
-
-
-
-
-	return 0;
-
-}
 
 struct addrinfo hints, *infoptr;
 
 /*
- * Converts a hostname to its ipv4 address string equivalent
+ * Converts inHostname to its ipv4 address string equivalent
+ * If inHostname is NULL localhost is used
  */
-char* makeV4(char* hostname){
+char* makeV4(char* inHostname){
+	char* hostname = "localhost";
+	if(inHostname != NULL){
+		hostname = inHostname;
+	}
 	hints.ai_family = AF_INET;
 
 	int getAddrInfoStatus = getaddrinfo(hostname, NULL, &hints, &infoptr);
@@ -191,4 +154,106 @@ char* makeV4(char* hostname){
 	return hostV4;
 }
 
+/**
+ * Creates Header to request inFile at inHost and places it at the location of header.
+ * If inFIle or inHost are NULL they default to index.html at localhost respectively
+ * If header is NULL the function returns NULL
+ */
+char* createHeader(char* inFile, char* inHost, char* header){
+	char* file = "index.html";
+	char* host = "localhost";
+	if(header == NULL){
+		return NULL;
+	}
+
+	if(inFile != NULL){
+		file = inFile;
+	}
+
+	if(inHost != NULL){
+		host = inHost;
+	}
+	strcpy(header, "GET /");
+	strcat(header, file);
+	strcat(header, " HTTP/1.1\r\nHost:");
+	strcat(header, host);
+	strcat(header, "\r\nAccept: text/html\r\nConnection: Close\r\n\r\n");
+
+	return header;
+}
+
+/**
+ * Reads the data from sock and place only the HTML contents in the output file
+ * Prints all of the contents read from sock
+ */
+int readSocket(int sock, FILE* output){
+	char* buffer = calloc(128,sizeof(char)); //Make a buffer with clean memory
+
+
+	char* start = NULL;            //Start and End of the HTML Document to avoid storing excess data
+	char* end = NULL;
+
+	int write = -1; 				//Don't start writing to file immediately
+	// Write to File
+	while(end == NULL){ 			//While the end of the HTML hasn't been seen
+		int readStatus = read(sock, buffer, 127);   //Read into the buffer leaving a space at the end
+
+		if(readStatus < 0){							//Error checking
+			fprintf(stderr, "Error reading from socket: %s\n", strerror(errno));
+			exit(0);
+		}else{
+			//		printf("Received Message ...\n");
+		}
+
+
+		buffer[127] = '\0'; 						//Make it a string to make processing easier
+		printf("%s", buffer);						//Print the buffer so the server response is printed
+
+
+		end = strstr(buffer, "</html>");			//Look for ending tags
+		if(end == NULL){
+			end = strstr(buffer, "</HTML>");
+		}
+
+		start = strstr(buffer, "<html");		  	//Look for starting tags
+		if(start == NULL){
+			start = strstr(buffer, "<HTML");
+		}
+		if(start == NULL){
+			start = strstr(buffer, "<!DOCTYPE ");
+		}
+
+
+		if(start != NULL){							//If start was in THIS buffer clear out all data up to start
+			char* ptr = buffer;
+			while(ptr < (start)){
+				*ptr = ' ';
+				ptr ++;
+			}
+			write = 0;								//Allow writing to the File
+		}
+
+
+		if(end != NULL){							//If the end was in THIS buffer end the string following the end tag
+			end += 7;
+			while(end < (buffer + 127)){
+				*end = '\0';
+				end ++;
+			}
+		}
+
+
+		if(write == 0){								//If writing had been enabled write the buffer into the file
+			//printf("%s", buffer);
+			fputs(buffer,output);
+		}
+
+
+		free(buffer);								//Free the pointer
+		buffer = calloc(127, sizeof(char));			//Get new clean data (TODO inefficient)
+
+
+	}
+	return 0;
+}
 
