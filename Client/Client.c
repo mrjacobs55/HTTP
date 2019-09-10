@@ -103,7 +103,7 @@ int main(int argc, char *argv[]){
 
 	gettimeofday(&stop, NULL);
 	if(RTT){
-		printf("RTT is %'.3f MilliSeconds\n\n\n", (double) (stop.tv_sec - start.tv_sec) * 1000 + (double) (stop.tv_usec - start.tv_usec) / 1000);
+		printf("\nRTT is %'.3f MilliSeconds\n\n", (double) (stop.tv_sec - start.tv_sec) * 1000 + (double) (stop.tv_usec - start.tv_usec) / 1000);
 	}
 	if(connectStatus < 0){
 		fprintf(stderr, "Error completing connection: %s\n", strerror(errno));
