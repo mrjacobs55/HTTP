@@ -10,5 +10,7 @@
 
 int main(int argc, char *argv[]);
 char* makeV4(char* hostname);
+char* createHeader(char* inFile, char* inHost, char* header);
+int readSocket(int sock, FILE* output);
 
 #endif /* CLIENT_H_ */
